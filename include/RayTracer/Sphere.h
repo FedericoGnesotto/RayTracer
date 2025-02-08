@@ -6,4 +6,5 @@ struct Sphere
 {
 	vec3 origin;
 	double radius;
+	vec3 color;
 };

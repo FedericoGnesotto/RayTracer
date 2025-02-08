@@ -32,6 +32,7 @@ public:
 
 		{
 			auto sphereControl = new QGroupBox();
+			sphereControl->setMaximumWidth(200);
 			auto sphereControlLayout = new QHBoxLayout();
 
 			auto xControl = new QDoubleSpinBox();
@@ -55,7 +56,7 @@ public:
 			vLayout->addWidget(sphereControl);
 
 
-			Sphere& s = m_spheres.emplace_back(vec3::Zero(), 1.0);
+			Sphere& s = m_spheres.emplace_back(vec3::Zero(), 1.0, vec3(0.2, 0.3, 0.5));
 
 			connect(xControl,
 					static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
@@ -98,19 +99,11 @@ public:
 		myTimer->setSingleShot(false);
 		myTimer->start(500);
 		connect(myTimer, &QTimer::timeout, this, &MainWindow::doUpdate);
+
+		setMouseTracking(true);
 	}
 
-	void resizeEvent(QResizeEvent* event) override
-	{
-		QMainWindow::resizeEvent(event);
-
-		m_cameraInter.resizeEvent(event->size().width(), event->size().height());
-
-		m_img = std::make_unique<QImage>(m_imageWidget->width(), m_imageWidget->height(), QImage::Format_ARGB32);
-		doUpdate();
-	}
-
-	void doUpdate()
+	void render()
 	{
 		auto start = std::chrono::high_resolution_clock::now();
 		m_renderer.render(*m_img, m_camera, m_spheres);
@@ -120,7 +113,40 @@ public:
 		m_imageWidget->setPixmap(QPixmap::fromImage(*m_img));
 	}
 
-	bool event(QEvent* event) override { return m_cameraInter.sceneEvent(event); }
+	void doUpdate() { QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest)); }
+
+
+	bool event(QEvent* event) override
+	{
+		if (event->type() == QEvent::UpdateRequest)
+		{
+			render();
+			return QMainWindow::event(event);
+		}
+
+		event->setAccepted(false);
+
+		//return QMainWindow::event(event);
+		if (event->type() == QEvent::Type::Resize)
+		{
+			auto re = static_cast<QResizeEvent*>(event);
+
+			m_cameraInter.resizeEvent(m_imageWidget->width(), m_imageWidget->height());
+
+			m_img = std::make_unique<QImage>(m_imageWidget->width(), m_imageWidget->height(), QImage::Format_ARGB32);
+
+			doUpdate();
+
+			MainWindow::resizeEvent(re);
+		}
+		if (m_cameraInter.sceneEvent(event))
+		{
+			doUpdate();
+			event->accept();
+			return true;
+		}
+		return QMainWindow::event(event);
+	}
 
 private:
 	std::unique_ptr<QImage> m_img{};

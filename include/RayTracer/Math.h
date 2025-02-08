@@ -15,7 +15,7 @@ using mat3 = Eigen::Matrix3d;
 using mat3i = Eigen::Matrix3i;
 
 
-inline vec4 clamp(vec4 v, double min, double max)
+inline vec3 clamp(vec3 v, double min, double max)
 {
-	return vec4(std::clamp(v[0], min, max), std::clamp(v[1], min, max), std::clamp(v[2], min, max), std::clamp(v[3], min, max));
+	return vec3(std::clamp(v[0], min, max), std::clamp(v[1], min, max), std::clamp(v[2], min, max));
 }
