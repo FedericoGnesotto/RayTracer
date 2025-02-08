@@ -23,7 +23,6 @@ void Camera::update(const vec3& forward, const vec3& positionDelta)
 {
 	m_forwardDir = forward;
 	m_position += positionDelta;
-	std::cout << "position " << m_position;
 	computeView();
 	computeRayDirections();
 }
@@ -41,13 +40,26 @@ void Camera::resize(int width, int height)
 	computeRayDirections();
 }
 
+void Camera::reset()
+{
+	m_forwardDir = vec3{0., 0., -1.};
+	m_position = vec3{0., 0., 6.};
+	computeView();
+	computeRayDirections();
+}
+
 void Camera::computeProjection()
 {
 	m_projection = perspective(
 		m_verticalFOV * std::numbers::pi / 180.0, m_viewportWidth / (double)m_viewportHeight, m_nearClip, m_farClip);
+	m_projectionInv = m_projection.inverse();
 }
 
-void Camera::computeView() { m_view = lookAt(vec3{0., 1., 0.}); }
+void Camera::computeView()
+{
+	m_view = lookAt(vec3{0., 1., 0.});
+	m_viewInv = m_view.inverse();
+}
 
 void Camera::computeRayDirections()
 {
@@ -60,11 +72,11 @@ void Camera::computeRayDirections()
 			vec2 coord = {x / (float)m_viewportWidth, y / (double)m_viewportHeight};
 			coord = (coord * 2.0) - vec2::Ones();    // NDC
 
-			vec4 target = m_projection.inverse() * vec4(coord.x(), coord.y(), 1., 1.);
+			vec4 target = m_projectionInv * vec4(coord.x(), coord.y(), 1., 1.);
 
-			vec4 v;
-			v << (target.head(3) / target.w()).normalized(), 0;          // View space
-			const vec3 rayDirection = (m_view.inverse() * v).head(3);    // World space
+			vec4 v = vec4::Zero();
+			v << (target.head(3) / target.w()).normalized();      // View space
+			const vec3 rayDirection = (m_viewInv * v).head(3);    // World space
 			m_rayDirections[x + y * m_viewportWidth] = rayDirection;
 		}
 	}
@@ -76,11 +88,9 @@ mat4 Camera::lookAt(const vec3& upVectorWorld)    // has to be normalized
 
 	m_forwardDir = m_forwardDir.normalized();
 
-	const vec3 cameraRight = m_forwardDir.cross(upVectorWorld);
-	assert(std::abs(cameraRight.norm() - 1.0) < 1e-5);
+	const vec3 cameraRight = m_forwardDir.cross(upVectorWorld).normalized();
 
-	vec3 cameraUp = cameraRight.cross(m_forwardDir);
-	assert(std::abs(cameraUp.norm() - 1.0) < 1e-5);
+	vec3 cameraUp = cameraRight.cross(m_forwardDir).normalized();
 
 	mat4 M{};
 	M.row(0) << cameraRight.x(), cameraRight.y(), cameraRight.z(), 0.;

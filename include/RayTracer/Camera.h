@@ -14,6 +14,7 @@ public:
 	const vec3& forwardDir() const { return m_forwardDir; }
 	void update(const vec3& forward, const vec3& positionDelta);
 	void resize(int width, int height);
+	void reset();
 
 private:
 	void computeProjection();
@@ -25,6 +26,9 @@ private:
 
 	mat4 m_projection = mat4::Zero();
 	mat4 m_view = mat4::Zero();
+
+	mat4 m_projectionInv = mat4::Zero();
+	mat4 m_viewInv = mat4::Zero();
 
 	double m_verticalFOV = 45.0;    // this is half of the total FOV
 	double m_nearClip = 0.1;
