@@ -30,9 +30,14 @@ public:
 		auto vLayout = new QVBoxLayout();
 		vLayout->addWidget(m_updateTimeLabel);
 
+		m_spheres.emplace_back(vec3{0, 0, -1}, 1.0, vec3(0.1, 0.6, 0.8));
+		m_spheres.emplace_back(vec3{0, 0, -.3}, 0.5, vec3(0.8, 0.1, 0.4));
+		for (auto i = 0; i < m_spheres.size(); ++i)
 		{
 			auto sphereControl = new QGroupBox();
 			sphereControl->setMaximumWidth(200);
+			sphereControl->setTitle("Sphere " + QString::number(i + 1));
+
 			auto sphereControlLayout = new QHBoxLayout();
 
 			auto xControl = new QDoubleSpinBox();
@@ -43,40 +48,41 @@ public:
 			yControl->setSingleStep(0.1);
 			zControl->setSingleStep(0.1);
 
-			xControl->setRange(-1., 1.);
-			yControl->setRange(-1., 1.);
+			xControl->setRange(-10., 10.);
+			yControl->setRange(-10., 10.);
 			zControl->setRange(-10., 10.);
+
+			xControl->setValue(m_spheres[i].origin.x());
+			yControl->setValue(m_spheres[i].origin.y());
+			zControl->setValue(m_spheres[i].origin.z());
 
 			sphereControlLayout->addWidget(xControl);
 			sphereControlLayout->addWidget(yControl);
 			sphereControlLayout->addWidget(zControl);
 
-			sphereControl->setTitle("Sphere Control");
-			sphereControl->setLayout(sphereControlLayout);
 			vLayout->addWidget(sphereControl);
 
-
-			Sphere& s = m_spheres.emplace_back(vec3::Zero(), 1.0, vec3(0.2, 0.3, 0.5));
+			sphereControl->setLayout(sphereControlLayout);
 
 			connect(xControl,
 					static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 					this,
-					[this, p = &s, xControl](double val) {
-						p->origin.x() = val;
+					[this, xControl, i](double val) {
+						m_spheres[i].origin.x() = val;
 						doUpdate();
 					});
 			connect(yControl,
 					static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 					this,
-					[this, p = &s, yControl](double val) {
-						p->origin.y() = val;
+					[this, i, yControl](double val) {
+						m_spheres[i].origin.y() = val;
 						doUpdate();
 					});
 			connect(zControl,
 					static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 					this,
-					[this, p = &s, zControl](double val) {
-						p->origin.z() = val;
+					[this, i, zControl](double val) {
+						m_spheres[i].origin.z() = val;
 						doUpdate();
 					});
 		}

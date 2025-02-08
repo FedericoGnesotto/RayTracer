@@ -74,9 +74,9 @@ void Camera::computeRayDirections()
 
 			vec4 target = m_projectionInv * vec4(coord.x(), coord.y(), 1., 1.);
 
-			vec4 v = vec4::Zero();
-			v << (target.head(3) / target.w()).normalized();      // View space
-			const vec3 rayDirection = (m_viewInv * v).head(3);    // World space
+			vec4 v;
+			v << (target.head(3) / target.w()).normalized(), 0;    // View space
+			const vec3 rayDirection = (m_viewInv * v).head(3);     // World space
 			m_rayDirections[x + y * m_viewportWidth] = rayDirection;
 		}
 	}
