@@ -29,12 +29,16 @@ add_executable(RayTracer
     "include/RayTracer/Math.h"
 )
 
-add_library(Eigen INTERFACE IMPORTED)
+set(EIGEN3_INCLUDE_DIR "" CACHE PATH "")
+IF(NOT EIGEN3_INCLUDE_DIR )
+    message( FATAL_ERROR "Set EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
+ENDIF()
 
-set_target_properties(Eigen PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "C:/Dev/Git/externals-vs2017-x64/eigen/3.4.0")
-# set_target_properties(${TargetName} PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${ARG_COMPILE_DEFINITIONS}")
+add_library(Eigen3 INTERFACE IMPORTED)
 
-target_link_libraries(RayTracer PRIVATE Qt5::Widgets Qt5::Core Eigen)
+set_target_properties(Eigen3 PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${EIGEN3_INCLUDE_DIR}")
+
+target_link_libraries(RayTracer PRIVATE Qt5::Widgets Qt5::Core Eigen3)
 
 target_include_directories(RayTracer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
