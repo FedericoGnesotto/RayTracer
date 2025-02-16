@@ -24,12 +24,18 @@ bool CameraInteraction::sceneEvent(const QEvent* event)
 			vec2 posVec2 = vec2(pos.x(), pos.y());
 			vec2 mouseDelta = posVec2 - m_lastMousePosition;
 			mouseDelta *= 0.002;
+
+			if (m_lastMousePosition != vec2::Zero())
+			{
+				vec3 forwardDir = handleRotation(mouseDelta);
+				if (forwardDir != vec3::Zero())
+					m_camera->update(forwardDir, vec3::Zero());
+				m_lastMousePosition = posVec2;
+				return true;
+			}
 			m_lastMousePosition = posVec2;
 
-			vec3 forwardDir = handleRotation(mouseDelta);
-			if (forwardDir != vec3::Zero())
-				m_camera->update(forwardDir, vec3::Zero());
-			return true;
+			return false;
 		}
 
 		return false;
@@ -91,8 +97,7 @@ vec3 CameraInteraction::handleRotation(const vec2& posDelta)
 		float pitchDelta = posDelta.y() * m_rotationSpeed;
 		float yawDelta = posDelta.x() * m_rotationSpeed;
 
-		Eigen::Quaterniond q =
-			Eigen::AngleAxisd(-pitchDelta, rightDirection) * Eigen::AngleAxisd(-yawDelta, vec3(0.f, 1.0f, 0.0f));
+		Eigen::Quaterniond q = Eigen::AngleAxisd(-pitchDelta, rightDirection) * Eigen::AngleAxisd(-yawDelta, upDirection);
 		m_forwardDirection = q.toRotationMatrix() * m_forwardDirection;
 
 		return m_forwardDirection;

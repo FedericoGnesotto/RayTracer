@@ -17,8 +17,8 @@ public:
 private:
 	vec3 handleTranslation();
 	vec3 handleRotation(const vec2&);
-	double m_tranlationSpeed = 1.0;
-	double m_rotationSpeed = 0.3;
+	double m_tranlationSpeed = 0.1;
+	double m_rotationSpeed = 0.03;
 	vec2 m_lastMousePosition = vec2::Zero();
 	int m_downKey = -1;
 	vec3 m_forwardDirection = vec3::Zero();

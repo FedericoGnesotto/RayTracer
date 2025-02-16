@@ -70,7 +70,8 @@ void Camera::computeRayDirections()
 		for (uint32_t x = 0; x < m_viewportWidth; x++)
 		{
 			vec2 coord = {x / (float)m_viewportWidth, y / (double)m_viewportHeight};
-			coord = (coord * 2.0) - vec2::Ones();    // NDC
+			coord.x() = (coord.x() * 2.0) - 1.;     // NDC
+			coord.y() = 1.0 - (coord.y() * 2.0);    // NDC y needs to be inverted from screen coordinates to ndc
 
 			vec4 target = m_projectionInv * vec4(coord.x(), coord.y(), 1., 1.);
 
@@ -92,10 +93,11 @@ mat4 Camera::lookAt(const vec3& upVectorWorld)    // has to be normalized
 
 	vec3 cameraUp = cameraRight.cross(m_forwardDir).normalized();
 
+	// basis vectors are the rows, because we are inverting the matrix (world moves right if camera moves left)
 	mat4 M{};
 	M.row(0) << cameraRight.x(), cameraRight.y(), cameraRight.z(), 0.;
 	M.row(1) << cameraUp.x(), cameraUp.y(), cameraUp.z(), 0.;
-	M.row(2) << -m_forwardDir.x(), -m_forwardDir.y(), -m_forwardDir.z(), 0.;
+	M.row(2) << -m_forwardDir.x(), -m_forwardDir.y(), -m_forwardDir.z(), 0.;    // inverts the z axis
 	M.row(3) << 0., 0., 0., 1.;
 
 	mat4 T = mat4::Identity();

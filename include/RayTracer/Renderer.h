@@ -1,5 +1,7 @@
 #pragma once
+#pragma once
 
+#include <RayTracer/Scene.h>
 #include <RayTracer/Sphere.h>
 
 #include <optional>
@@ -11,14 +13,16 @@ class QImage;
 struct HitInfo
 {
 	vec3 color;
-	double hitDistanceSquared;
+	vec3 hitPosWorld;
+	double hitDistRay;    // hitDistance along ray
+	vec3 hitPosNormal;
 };
 
 class Renderer
 {
 public:
-	void render(QImage& img, const Camera& camera, const std::vector<Sphere>& spheres);
+	void render(QImage& img, const Camera& camera, const Scene& scene);
 
 private:
-	std::optional<HitInfo> computePixelVal(const vec3& rayOrigin, const vec3& rayDir, const Sphere& sphere);
+	std::optional<HitInfo> computePixelVal(const vec3& rayOrigin, const vec3& rayDir, const Sphere& sphere, int bounceIdx);
 };
